@@ -1,9 +1,5 @@
 # Chess engine with Deep Reinforcement learning
 
-***I'm currently rewriting the whole thing in C++, you can check it out [here](https://github.com/zjeffer/chess-deep-rl-cpp).***
-
-***You can read my bachelor thesis about this project [here](https://github.com/zjeffer/howest-thesis).***
-
 ## Installation and user manual
 
 The installation manual and the user manual can both be found under `./documents/`
@@ -19,8 +15,6 @@ I'm only posting it here for people to try out a model that has gone through a f
 
 Normal chess engines work with the minimax algorithm: the engine tries to find the best move by creating a tree of all possible moves to a certain depth, and cutting down paths that lead to bad positions (alpha-beta pruning). It evaluates a position based on which pieces are on the board.
 
-![Alpha-Beta pruning in Minimax](code/img/AB_pruning.png)
-
 > Image source: By Jez9999, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=3708424
 
 ## How does my chess engine work?
@@ -32,13 +26,9 @@ The newly trained neural network is evaluated against the old network by playing
 many games against each other, and the best network is kept. This process is repeated
 for a long time.
 
-![Playing one move](code/img/ChessRL-schematic.png "Playing one move")
-
 ### The neural network
 
 * Input layer: 19 8x8 boards of booleans
-
-<img src="code/tests/input_planes/full.png" alt="Input example" width="80%"/>
 
 * 20 hidden layers:
 	* Convolutional hidden layer
@@ -47,7 +37,6 @@ for a long time.
 	1. The win probabilities of each move (73 boards of 8x8 floats)
 	2. The value of the given board (scalar)
 
-<img src="code/tests/output_planes/unfiltered.png" alt="Output example" width="100%"/>
 
 => 30+ million parameters
 
@@ -68,8 +57,6 @@ In chess, normal MCTS would be incredibly inefficient, because the amount of act
 every position can have is too high (step 1), and the length of the game can be very long
 when choosing random moves (step 3).
 
-![Monte Carlo Tree Search](code/img/MCTS-wikipedia.png "Monte Carlo Tree Search")
-
 > Image source: By Rmoss92 - Own work, CC BY-SA 4.0, https://commons.wikimedia.org/w/index.php?curid=88889583
 
 ### AlphaZero's MCTS
@@ -78,8 +65,6 @@ AlphaZero uses a different kind of MCTS:
 
 * step 1 (Selection) is not random, but based on neural network predictions and upper confidence bound
 * step 3 (Simulation) is replaced by the value prediction received by the neural network (Evaluation)
-
-![MCTS steps for 1 simulation](code/img/MCTS-alphazero.png "MCTS steps for 1 simulation")
 
 > Image source: https://sebastianbodenstein.net/post/alphazero/
 
@@ -112,8 +97,6 @@ AlphaZero uses a different kind of MCTS:
 * The move with greatest $N$ (deterministically)
 * According to a distribution (stochastically): $\pi \sim N$
 
-![Choose move from tree](code/img/MCTS-choose-move.png "Choose move from tree")
-
 
 ### Creating a training set
 
@@ -129,14 +112,11 @@ AlphaZero uses a different kind of MCTS:
 * Sample a mini-batch from a high amount of positions (see training set)
 * Train the network on the mini-batch
 
-![Creating a training set](code/img/training.png "Creating a training set")
-
 > Trophy icon by Freepik https://www.flaticon.com/authors/freepik
 
 
 | First training session | Second training session |
 |:-:| :-: |
-|![First training session](code/plots/first-training.png) | ![Second training session](code/plots/second-training-0.002.png) |
 
 The first training session went pretty well, but the second didn't seem to train much at all. 
 I believe I would need to generate a lot more data through selfplay to properly train the model.
@@ -146,12 +126,8 @@ I believe I would need to generate a lot more data through selfplay to properly 
 It is necessary to create a huge training set of positions by making the current best AI play against itself. 
 To do that, I had the problem that playing multiple games in parallel was not possible because every agent needs access to the network:
 
-![Self-play without multiprocessing](code/img/without-multiprocessing.png "Self-play without multiprocessing")
-
 To fix this, I created a server-client architecture with Python sockets: the server has access to the neural network, 
 and the client sends predictions to the server. The server then sends the predictions back to the correct client. This is much more scalable and can be dockerized.
-
-![Self-play with multiprocessing](code/img/with-multiprocessing.png "Self-play with multiprocessing")
 
 With a good system as a server (Ryzen 7 5800H + RTX 3070 Mobile), multiple clients (including clients on the system itself) can be connected to the server. 
 
